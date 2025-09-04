@@ -5,11 +5,6 @@ const { saveLink, getLink } = require('../data/store');
 
 const router = express.Router();
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-
-const shortUrl = `${BASE_URL}/${id}`;
-
-// POST /create
 router.post('/create', (req, res) => {
   const { url, expiresAt } = req.body;
 
@@ -17,7 +12,7 @@ router.post('/create', (req, res) => {
     return res.status(400).json({ error: 'URL e data de expiração são obrigatórios.' });
   }
 
-  const id = uuidv4().slice(0, 6); // ID curto
+  const id = uuidv4().slice(0, 6);
   const expiration = dayjs(expiresAt);
 
   if (!expiration.isValid()) {
@@ -29,14 +24,16 @@ router.post('/create', (req, res) => {
     expiresAt: expiration.toISOString(),
   });
 
+  const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+  const shortUrl = `${BASE_URL}/${id}`;
+
   return res.status(201).json({
     id,
-    shortUrl: `http://localhost:3000/${id}`,
+    shortUrl,
     expiresAt: expiration.toISOString(),
   });
 });
 
-// GET /:id
 router.get('/:id', (req, res) => {
   const id = req.params.id;
   const record = getLink(id);
@@ -56,4 +53,3 @@ router.get('/:id', (req, res) => {
 });
 
 module.exports = router;
-
