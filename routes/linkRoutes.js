@@ -53,8 +53,8 @@ router.get('/:id', async (req, res) => {
       return res.status(404).send('❌ Link não encontrado.');
     }
 
-    const now = dayjs();
-    const expiresAt = dayjs(record.expiresAt);
+    const now = dayjs().utc();
+    const expiresAt = dayjs(record.expiresAt).utc();
 
     if (now.isAfter(expiresAt)) {
       return res.status(410).send('⏰ Este link expirou.');
@@ -68,3 +68,4 @@ router.get('/:id', async (req, res) => {
 });
 
 module.exports = router;
+
