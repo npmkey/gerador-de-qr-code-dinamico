@@ -50,7 +50,8 @@
   <script>
     async function gerarQRCode() {
       const url = document.getElementById('url').value;
-      const expiresAt = document.getElementById('expiresAt').value;
+      const expiresAtLocal = document.getElementById('expiresAt').value;
+      const expiresAt = new Date(expiresAtLocal).toISOString();
       const result = document.getElementById('result');
       const qr = document.getElementById('qr');
 
@@ -99,4 +100,5 @@
   </script>
 </body>
 </html>
+
 
