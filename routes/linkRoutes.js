@@ -5,6 +5,10 @@ const { saveLink, getLink } = require('../data/store');
 
 const router = express.Router();
 
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+
+const shortUrl = `${BASE_URL}/${id}`;
+
 // POST /create
 router.post('/create', (req, res) => {
   const { url, expiresAt } = req.body;
@@ -52,3 +56,4 @@ router.get('/:id', (req, res) => {
 });
 
 module.exports = router;
+
