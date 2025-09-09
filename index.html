@@ -30,38 +30,66 @@
       word-break: break-all;
       text-align: center;
     }
+    .loading {
+      text-align: center;
+      color: #555;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
   <h1>Gerador de QR Code com Expiração</h1>
-  
+
   <input type="url" id="url" placeholder="Digite o link (https://...)" required />
-  
+
   <input type="datetime-local" id="expiresAt" required />
-  
+
   <button onclick="gerarQRCode()">Gerar QR Code</button>
-  
+
   <div id="result"></div>
   <div id="qr"></div>
 
   <!-- QR Code library -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-  
+
   <script>
+    // Define a data mínima como agora no campo de data
+    document.addEventListener('DOMContentLoaded', () => {
+      const now = new Date();
+      const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+                        .toISOString().slice(0, 16);
+      document.getElementById('expiresAt').min = localNow;
+    });
+
     async function gerarQRCode() {
-      const url = document.getElementById('url').value;
-      const expiresAtLocal = document.getElementById('expiresAt').value;
-      const expiresAt = new Date(expiresAtLocal).toISOString();
+      const urlInput = document.getElementById('url');
+      const expiresAtInput = document.getElementById('expiresAt');
       const result = document.getElementById('result');
       const qr = document.getElementById('qr');
+
+      const url = urlInput.value.trim();
+      const expiresAtLocal = expiresAtInput.value;
+      const expiresAt = new Date(expiresAtLocal);
 
       result.innerHTML = '';
       qr.innerHTML = '';
 
-      if (!url || !expiresAt) {
-        alert('Preencha o link e a data de expiração.');
+      // Validação da URL
+      try {
+        new URL(url);
+      } catch {
+        alert('URL inválida. Certifique-se de incluir http:// ou https://');
         return;
       }
+
+      // Validação da data
+      const agora = new Date();
+      if (!expiresAtLocal || expiresAt <= agora) {
+        alert('A data de expiração deve ser futura.');
+        return;
+      }
+
+      result.innerHTML = '<div class="loading">Gerando QR Code...</div>';
 
       try {
         const response = await fetch('https://gerador-de-qr-code-dinamico-production.up.railway.app/create', {
@@ -69,13 +97,13 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ url, expiresAt })
+          body: JSON.stringify({ url, expiresAt: expiresAt.toISOString() })
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          result.innerHTML = 'Erro: ' + data.error;
+          result.innerHTML = 'Erro: ' + (data?.error || 'Erro desconhecido na API.');
           return;
         }
 
@@ -83,10 +111,10 @@
 
         result.innerHTML = `URL curta: <a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
 
-        // Gera QR Code com a URL curta
+        // Gera o QR Code
         QRCode.toCanvas(shortUrl, { width: 256 }, function (err, canvas) {
           if (err) {
-            result.innerHTML += '<br>Erro ao gerar QR Code.';
+            result.innerHTML += '<br>Erro ao gerar o QR Code.';
             return;
           }
           qr.appendChild(canvas);
@@ -100,5 +128,3 @@
   </script>
 </body>
 </html>
-
-
